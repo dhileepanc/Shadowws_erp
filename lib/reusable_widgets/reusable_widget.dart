@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 logoWidget(String imageName) {
   return Image.asset(
     imageName,
     fit: BoxFit.fitWidth,
-    width: 240,
-    height: 240,
-    color: Colors.white,
+    width: 400,
+    height: 100,
   );
 }
 
@@ -49,7 +47,7 @@ Container SigninSignupButton(
     decoration: BoxDecoration(borderRadius: BorderRadius.circular(90)),
     child: ElevatedButton(
       onPressed: () {
-
+        onTap();
       },
       child: Text(
         isLogin ? 'LOG IN' : 'SIGN UP',
@@ -74,6 +72,7 @@ class AppStyle {
   static Color mainColor = Color(0xFF000633);
   static Color accentColor = Color(0xFF0065FF);
 
+
   static List<Color> cardsColor = [
     Colors.white,
     Colors.red.shade100,
@@ -85,12 +84,5 @@ class AppStyle {
     Colors.blueGrey.shade100,
   ];
 
-  static TextStyle mainTitle =
-      GoogleFonts.roboto(fontSize: 18.0, fontWeight: FontWeight.bold);
 
-  static TextStyle mainContent =
-      GoogleFonts.nunito(fontSize: 16.0, fontWeight: FontWeight.normal);
-
-  static TextStyle dateTitle =
-      GoogleFonts.roboto(fontSize: 13.0, fontWeight: FontWeight.w500);
 }

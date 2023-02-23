@@ -1,9 +1,6 @@
 
 import 'package:flutter/material.dart';
-import 'package:flutter_firebase/screens/signin_screen.dart';
-
-
-import 'screens/home_screen.dart';
+import 'screens/signin_screen.dart';
 
 void main() async {
 
@@ -31,6 +28,7 @@ class MyApp extends StatelessWidget {
           // is not restarted.
           primarySwatch: Colors.blue,
         ),
+        // home: const SigninScreen());
         home: const SigninScreen());
   }
 }

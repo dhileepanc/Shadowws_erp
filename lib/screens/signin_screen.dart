@@ -1,12 +1,11 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../color_utils.dart';
+import '../dashboard.dart';
 import '../reusable_widgets/reusable_widget.dart';
 import 'home_screen.dart';
-import 'signup_screens.dart';
-import 'package:http/http.dart' as http;
 
 class SigninScreen extends StatefulWidget {
   const SigninScreen({super.key});
@@ -16,38 +15,58 @@ class SigninScreen extends StatefulWidget {
 }
 
 class _SigninScreenState extends State<SigninScreen> {
-  TextEditingController _passwordTextController = TextEditingController();
-  TextEditingController _emailTextController = TextEditingController();
+  TextEditingController userNameController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
 
-  Future login() async{
-    var url =Uri.parse("http://192.168.0.14/shadowwws/login.php");
-    var response = await http.post(url,body:{
-      "u_name":_emailTextController.text,
-      "password":_passwordTextController.text,
+  bool isLoading = false;
+  String errorMessage = '';
+  Future<void> login() async {
+    final userName = userNameController.text;
+    final password = passwordController.text;
 
-    });
-    var data =json.decode(response.body);
-    if(data == "Success")
-      {
-        Fluttertoast.showToast(
-          msg:'Login Successful',
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.CENTER,timeInSecForIosWeb: 1,
-          backgroundColor: Colors.green,
-          textColor: Colors.white,
-          fontSize: 16,
-        );
-        Navigator.push(context, MaterialPageRoute(builder: (context)=>HomeScreen()));
-      }
-    else{
-      Fluttertoast.showToast(
-          msg:'Username or password incorrect',
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.CENTER,timeInSecForIosWeb: 1,
-          backgroundColor: Colors.red,
-          textColor: Colors.white,
-          fontSize: 16,);
+    if (userName.isEmpty || password.isEmpty) {
+      // show error message if either field is empty
+      showAlertDialog(context, 'Error', 'Please enter both username and password');
+      return;
     }
+
+    final response = await http.post(Uri.parse('http://192.168.0.14/d_shadowws_client_5/login.php'), body: {
+      'u_name': userName,
+      'password': password,
+    });
+
+    final data = jsonDecode(response.body);
+
+    if (data.containsKey('error')) {
+      // show error message if login was unsuccessful
+      showAlertDialog(context, 'Error', data['error']);
+    } else {
+      // save user_id to shared preferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('user_id', data['user_id']);
+
+      // navigate to dashboard
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => Dashboard()),
+      );
+    }
+  }
+
+  void showAlertDialog(BuildContext context, String title, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -58,9 +77,9 @@ class _SigninScreenState extends State<SigninScreen> {
         height: MediaQuery.of(context).size.height,
         decoration: BoxDecoration(
           gradient: LinearGradient(colors: [
-            hexStringToColor('CB2B93'),
-            hexStringToColor('9546C4'),
-            hexStringToColor('5E61F4'),
+            hexStringToColor('#FF0000'),
+            hexStringToColor('#4c4c4c'),
+            hexStringToColor('#696969'),
           ], begin: Alignment.topCenter, end: Alignment.bottomCenter),
         ),
         child: SingleChildScrollView(
@@ -69,12 +88,12 @@ class _SigninScreenState extends State<SigninScreen> {
               20, MediaQuery.of(context).size.height * 0.2, 20, 0),
           child: Column(
             children: [
-              logoWidget('images/logo1.png'),
+              logoWidget('images/logo_shadowws_orginal.png'),
               const SizedBox(
-                height: 30,
+                height: 110,
               ),
               ReusableTextField('Enter UserName', Icons.person_outline, false,
-                  _emailTextController),
+                  userNameController),
               const SizedBox(
                 height: 30,
               ),
@@ -82,12 +101,12 @@ class _SigninScreenState extends State<SigninScreen> {
                 'Enter Password',
                 Icons.lock_outline,
                 true,
-                _passwordTextController,
+                passwordController,
               ),
               const SizedBox(
                 height: 30,
               ),
-               ElevatedButton(
+              ElevatedButton(
                 onPressed: () {
                   login();
                 },
@@ -127,7 +146,7 @@ class _SigninScreenState extends State<SigninScreen> {
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => SignUpScreen(),
+                  builder: (context) => HomeScreen(),
                 ));
           },
           child: const Text(
